@@ -35,10 +35,25 @@ async function run() {
     // making db and collection
     const database = client.db("SmartDealsDB");
     const productsCollection = database.collection("products");
+    const bidsCollection = database.collection("bidCollection");
+    const userCollection = database.collection("user");
+
+    // User related apis
+    app.post("/users", async (req, res) => {
+      const users = req.body;
+      const result = await userCollection.insertOne(users);
+      res.send(result);
+    });
 
     // get all products
     app.get("/products", async (req, res) => {
-      const corsor = productsCollection.find();
+      console.log(req.query);
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.email = email;
+      }
+      const corsor = productsCollection.find(query);
       const result = await corsor.toArray();
       res.send(result);
     });
@@ -77,6 +92,26 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await productsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // bid realeted API
+    app.get("/bids", async (req, res) => {
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.buyer_email = email;
+      }
+
+      const corsor = bidsCollection.find(query);
+      const result = await corsor.toArray();
+      res.send(result);
+    });
+
+    // post bids
+    app.post("/bids", async (req, res) => {
+      const newBids = req.body;
+      const result = await bidsCollection.insertOne(newBids);
       res.send(result);
     });
 
